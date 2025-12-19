@@ -1,5 +1,5 @@
 # Stage 1: Build the Next.js frontend
-FROM node:18-slim AS builder
+FROM node:20-slim AS builder
 WORKDIR /app
 
 # Install build dependencies for native modules like 'canvas'
@@ -18,7 +18,7 @@ COPY . .
 RUN npm run build
 
 # Stage 2: Final runtime image
-FROM node:18-slim
+FROM node:20-slim
 WORKDIR /app
 
 # Install Python 3 and build dependencies for OpenCV/Torch
