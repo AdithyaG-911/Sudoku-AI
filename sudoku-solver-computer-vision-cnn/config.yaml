@@ -1,0 +1,12 @@
+base: data/raw/
+
+# MODELS
+models:
+  path: models/model.pkl
+
+results:
+  raw_path: results/results_raw.pkl
+  evaluated_path: results/results_evaluated.pkl
+
+visualization:
+  figure_directory: reports/figures/
