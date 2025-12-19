@@ -1,0 +1,411 @@
+@import "tailwindcss";
+/* Removed tw-animate-css import causing RTL CSS error */
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --background: oklch(0.985 0.002 247);
+  --foreground: oklch(0.145 0.015 247);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0.015 247);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0.015 247);
+  --primary: oklch(0.65 0.19 175);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.96 0.01 247);
+  --secondary-foreground: oklch(0.205 0.015 247);
+  --muted: oklch(0.96 0.008 247);
+  --muted-foreground: oklch(0.5 0.01 247);
+  --accent: oklch(0.75 0.15 175);
+  --accent-foreground: oklch(0.145 0.015 247);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.985 0 0);
+  --border: oklch(0.9 0.008 247);
+  --input: oklch(0.92 0.008 247);
+  --ring: oklch(0.65 0.19 175);
+  --chart-1: oklch(0.65 0.19 175);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --radius: 0.75rem;
+  --sidebar: oklch(0.985 0.002 247);
+  --sidebar-foreground: oklch(0.145 0.015 247);
+  --sidebar-primary: oklch(0.65 0.19 175);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.96 0.01 247);
+  --sidebar-accent-foreground: oklch(0.205 0.015 247);
+  --sidebar-border: oklch(0.9 0.008 247);
+  --sidebar-ring: oklch(0.65 0.19 175);
+  --success: oklch(0.72 0.19 142);
+  --warning: oklch(0.78 0.18 85);
+}
+
+.dark {
+  --background: oklch(0.12 0.015 247);
+  --foreground: oklch(0.96 0.008 247);
+  --card: oklch(0.16 0.015 247);
+  --card-foreground: oklch(0.96 0.008 247);
+  --popover: oklch(0.16 0.015 247);
+  --popover-foreground: oklch(0.96 0.008 247);
+  --primary: oklch(0.7 0.18 175);
+  --primary-foreground: oklch(0.12 0.015 247);
+  --secondary: oklch(0.22 0.015 247);
+  --secondary-foreground: oklch(0.96 0.008 247);
+  --muted: oklch(0.22 0.015 247);
+  --muted-foreground: oklch(0.6 0.01 247);
+  --accent: oklch(0.55 0.15 175);
+  --accent-foreground: oklch(0.96 0.008 247);
+  --destructive: oklch(0.5 0.2 27);
+  --destructive-foreground: oklch(0.96 0.008 247);
+  --border: oklch(0.26 0.015 247);
+  --input: oklch(0.22 0.015 247);
+  --ring: oklch(0.7 0.18 175);
+  --chart-1: oklch(0.7 0.18 175);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.16 0.015 247);
+  --sidebar-foreground: oklch(0.96 0.008 247);
+  --sidebar-primary: oklch(0.7 0.18 175);
+  --sidebar-primary-foreground: oklch(0.12 0.015 247);
+  --sidebar-accent: oklch(0.22 0.015 247);
+  --sidebar-accent-foreground: oklch(0.96 0.008 247);
+  --sidebar-border: oklch(0.26 0.015 247);
+  --sidebar-ring: oklch(0.7 0.18 175);
+  --success: oklch(0.65 0.17 142);
+  --warning: oklch(0.72 0.16 85);
+}
+
+@theme inline {
+  --font-sans: "Geist", "Geist Fallback";
+  --font-mono: "Geist Mono", "Geist Mono Fallback";
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --breakpoint-xs: 350px;
+  --animate-in: enter 0.2s ease-out;
+  --animate-out: exit 0.15s ease-in;
+}
+
+/* Added animation keyframes manually */
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes exit {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fade-out {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes zoom-in {
+  from {
+    transform: scale(0.95);
+  }
+
+  to {
+    transform: scale(1);
+  }
+}
+
+@keyframes zoom-out {
+  from {
+    transform: scale(1);
+  }
+
+  to {
+    transform: scale(0.95);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Animation utility classes */
+.animate-in {
+  animation: fade-in 0.2s ease-out, zoom-in 0.2s ease-out;
+}
+
+.animate-out {
+  animation: fade-out 0.15s ease-in, zoom-out 0.15s ease-in;
+}
+
+.fade-in-0 {
+  animation: fade-in 0.2s ease-out;
+}
+
+.fade-out-0 {
+  animation: fade-out 0.15s ease-in;
+}
+
+.zoom-in-95 {
+  animation: zoom-in 0.2s ease-out;
+}
+
+.zoom-out-95 {
+  animation: zoom-out 0.15s ease-in;
+}
+
+/* Custom animations for Sudoku */
+@keyframes cell-pop {
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+@keyframes hint-glow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 5px var(--primary);
+  }
+
+  50% {
+    box-shadow: 0 0 20px var(--primary);
+  }
+}
+
+@keyframes confetti {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+@keyframes pulse-soft {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.animate-cell-pop {
+  animation: cell-pop 0.2s ease-in-out;
+}
+
+.animate-hint-glow {
+  animation: hint-glow 1.5s ease-in-out infinite;
+}
+
+.animate-confetti {
+  animation: confetti 4s ease-out forwards;
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 2s ease-in-out infinite;
+}
+
+/* Added scroll reveal animations */
+@keyframes scroll-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scroll-reveal-left {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scroll-reveal-right {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scroll-reveal-scale {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.scroll-reveal {
+  opacity: 0;
+}
+
+.scroll-reveal.visible {
+  animation: scroll-reveal 0.6s ease-out forwards;
+}
+
+.scroll-reveal-left.visible {
+  animation: scroll-reveal-left 0.6s ease-out forwards;
+}
+
+.scroll-reveal-right.visible {
+  animation: scroll-reveal-right 0.6s ease-out forwards;
+}
+
+.scroll-reveal-scale.visible {
+  animation: scroll-reveal-scale 0.6s ease-out forwards;
+}
+
+/* Added stagger animation delays */
+.stagger-1 {
+  animation-delay: 0.1s;
+}
+
+.stagger-2 {
+  animation-delay: 0.2s;
+}
+
+.stagger-3 {
+  animation-delay: 0.3s;
+}
+
+.stagger-4 {
+  animation-delay: 0.4s;
+}
+
+.stagger-5 {
+  animation-delay: 0.5s;
+}
+
+/* Added pause overlay styles */
+.pause-overlay {
+  backdrop-filter: blur(8px);
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.dark .pause-overlay {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+/* Mobile responsive improvements */
+@media (max-width: 640px) {
+  .sudoku-cell {
+    font-size: 1.25rem;
+  }
+
+  .sudoku-notes {
+    font-size: 0.5rem;
+  }
+}
+
+/* Sudoku X diagonal highlight */
+.diagonal-cell {
+  background: linear-gradient(135deg, transparent 45%, var(--primary) 45%, var(--primary) 55%, transparent 55%);
+  opacity: 0.1;
+}
+
+.dark .diagonal-cell {
+  opacity: 0.15;
+}
