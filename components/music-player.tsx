@@ -38,7 +38,13 @@ export function MusicPlayer() {
             if (audioRef.current.src !== new URL(currentTrack.src, window.location.href).href) {
                 const wasPlaying = isPlaying;
                 audioRef.current.src = currentTrack.src;
-                if (wasPlaying) audioRef.current.play();
+                if (wasPlaying) {
+                    audioRef.current.play().catch((error) => {
+                        if (error.name !== 'AbortError') {
+                            console.error('Audio play error:', error);
+                        }
+                    });
+                }
             }
             audioRef.current.volume = isMuted ? 0 : volume
         }
@@ -49,7 +55,11 @@ export function MusicPlayer() {
             if (isPlaying) {
                 audioRef.current.pause()
             } else {
-                audioRef.current.play()
+                audioRef.current.play().catch((error) => {
+                    if (error.name !== 'AbortError') {
+                        console.error('Audio play error:', error);
+                    }
+                });
             }
             setIsPlaying(!isPlaying)
         }
