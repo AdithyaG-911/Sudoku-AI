@@ -36,6 +36,7 @@ export async function extractSudokuFromImage(
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
+      console.error("API Error Data:", errorData);
       throw new Error(errorData.error || `OCR Failed with status ${response.status}`);
     }
 
