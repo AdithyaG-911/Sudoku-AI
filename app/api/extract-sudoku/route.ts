@@ -46,16 +46,16 @@ export async function POST(request: NextRequest) {
             result = JSON.parse(stdout);
         } catch (e) {
             console.error('Failed to parse Python output:', stdout);
-            return NextResponse.json({ 
-                error: 'Invalid response from extractor', 
+            return NextResponse.json({
+                error: 'Invalid response from extractor',
                 details: String(e),
                 stdout: stdout,
-                stderr: stderr 
+                stderr: stderr
             }, { status: 500 });
         }
 
         if (result.error) {
-            return NextResponse.json({ 
+            return NextResponse.json({
                 error: result.error,
                 stderr: stderr,
                 stdout: stdout
@@ -64,11 +64,13 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json(result);
 
-    } catch (error) {
+    } catch (error: any) {
         console.error('API Error:', error);
-        return NextResponse.json({ 
-            error: 'Internal Server Error', 
-            details: String(error)
+        return NextResponse.json({
+            error: 'Internal Server Error',
+            details: String(error),
+            stdout: error?.stdout || '',
+            stderr: error?.stderr || ''
         }, { status: 500 });
     } finally {
         // Cleanup temp file
