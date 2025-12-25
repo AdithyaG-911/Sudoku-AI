@@ -189,7 +189,10 @@ export function SudokuGame() {
         <div
           className="flex flex-col lg:flex-row gap-1 sm:gap-2 lg:gap-8 items-center lg:items-center justify-center w-full max-w-6xl mx-auto h-full"
         >
-          <div className="flex flex-col items-center gap-2 sm:gap-4 w-full">
+          <div
+            className="flex flex-col items-center gap-2 sm:gap-4 w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
             {gameState ? (
               <SudokuBoard
                 board={gameState.board}
@@ -230,7 +233,11 @@ export function SudokuGame() {
             />
           </div>
 
-          {currentHint && <HintPanel hint={currentHint} onApply={applyHint} onDismiss={clearHint} />}
+          {currentHint && (
+            <div onClick={(e) => e.stopPropagation()}>
+              <HintPanel hint={currentHint} onApply={applyHint} onDismiss={clearHint} />
+            </div>
+          )}
         </div>
       </main>
 
