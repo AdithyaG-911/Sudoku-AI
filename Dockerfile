@@ -31,6 +31,7 @@ RUN apt-get update && apt-get install -y \
 
 # Set up Python environment
 COPY requirements.txt .
+RUN pip3 install --no-cache-dir torch torchvision --index-url https://download.pytorch.org/whl/cpu
 RUN pip3 install --no-cache-dir -r requirements.txt --break-system-packages
 
 # Copy Next.js build and dependencies
