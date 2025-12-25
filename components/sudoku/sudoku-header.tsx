@@ -97,7 +97,7 @@ export function SudokuHeader({
         </div>
 
         <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-          <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9 hidden sm:flex" onClick={onShowStats}>
+          <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9" onClick={onShowStats}>
             <BarChart2 className="h-4 w-4" />
             <span className="sr-only">Statistics</span>
           </Button>

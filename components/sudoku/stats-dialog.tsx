@@ -56,7 +56,7 @@ export function StatsDialog({ open, onOpenChange, statistics }: StatsDialogProps
             <div className="bg-muted/50 rounded-lg p-3 text-center hover:bg-muted/80 transition-colors">
               <Flame className="h-6 w-6 mx-auto text-orange-500 mb-1" />
               <div className="text-2xl font-bold">{statistics.currentStreak}</div>
-              <div className="text-xs text-muted-foreground">Day Streak</div>
+              <div className="text-xs text-muted-foreground">Win Streak</div>
             </div>
           </div>
 

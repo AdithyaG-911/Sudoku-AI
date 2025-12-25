@@ -33,23 +33,40 @@ export function useSound(src: string, options: { volume?: number } = {}) {
 export const CLICK_SOUND = "data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU" // truncated placeholder, better to use real file or standard one
 // Actually, let's use a generated beep for simplicity if no file is provided, or assume a path.
 // For now, I will create a simple utility that plays a short frequency for 'click'.
+// Singleton AudioContext to prevent "The AudioContext was not allowed to start" and memory leaks
+let sharedAudioContext: AudioContext | null = null;
+
+function getAudioContext() {
+    if (!sharedAudioContext) {
+        sharedAudioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    }
+    if (sharedAudioContext.state === 'suspended') {
+        sharedAudioContext.resume().catch(() => { });
+    }
+    return sharedAudioContext;
+}
+
 export function playClickSound() {
-    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
+    try {
+        const ctx = getAudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
 
-    osc.type = "sine";
-    osc.frequency.setValueAtTime(800, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.1);
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(800, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.1);
 
-    gain.gain.setValueAtTime(0.1, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.1, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
 
-    osc.connect(gain);
-    gain.connect(ctx.destination);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
 
-    osc.start();
-    osc.stop(ctx.currentTime + 0.1);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.1);
+    } catch (e) {
+        console.error("Audio error", e);
+    }
 }
 
 export function playVictorySound() {

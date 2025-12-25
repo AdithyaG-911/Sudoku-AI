@@ -19,7 +19,9 @@ export function ScrollReveal({ children, className, delay = 0, direction = "up" 
       ([entry]) => {
         if (entry.isIntersecting) {
           setTimeout(() => setIsVisible(true), delay)
-          observer.unobserve(entry.target)
+        } else {
+          // Optional: Reset visibility when scrolling out to allow re-animation
+          // setIsVisible(false)
         }
       },
       { threshold: 0.1, rootMargin: "0px 0px -50px 0px" },

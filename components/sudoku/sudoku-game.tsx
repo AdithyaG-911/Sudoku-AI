@@ -188,7 +188,6 @@ export function SudokuGame() {
       >
         <div
           className="flex flex-col lg:flex-row gap-1 sm:gap-2 lg:gap-8 items-center lg:items-center justify-center w-full max-w-6xl mx-auto h-full"
-          onClick={(e) => e.stopPropagation()}
         >
           <div className="flex flex-col items-center gap-2 sm:gap-4 w-full">
             {gameState ? (
