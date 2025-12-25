@@ -53,7 +53,6 @@ coverage.xml
 .pytest_cache/
 .hypothesis/
 # AI Data & Models
-data/
 /data/
 *.json
 !package.json
