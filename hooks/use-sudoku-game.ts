@@ -465,7 +465,7 @@ export function useSudokuGame() {
       setGameState((prev) => (prev ? { ...prev, timer: prev.timer + 1 } : prev))
     }, 1000)
     return () => clearInterval(interval)
-  }, [gameState])
+  }, [!!gameState, gameState?.isComplete, gameState?.isGameOver, gameState?.isPaused])
 
   useEffect(() => {
     if (!gameState || gameState.statsUpdated) return

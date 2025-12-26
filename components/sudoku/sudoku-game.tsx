@@ -189,48 +189,49 @@ export function SudokuGame() {
         <div
           className="flex flex-col lg:flex-row gap-1 sm:gap-2 lg:gap-8 items-center lg:items-center justify-center w-full max-w-6xl mx-auto h-full"
         >
-          <div
-            className="flex flex-col items-center gap-2 sm:gap-4 w-full"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {gameState ? (
-              <SudokuBoard
-                board={gameState.board}
-                initialBoard={gameState.initialBoard}
-                solution={gameState.solution}
-                notes={gameState.notes}
-                selectedCell={gameState.selectedCell}
-                hintCell={currentHint ? [currentHint.row, currentHint.col] : null}
-                onCellClick={selectCell}
-                isGameOver={gameState.isGameOver}
-                isPaused={gameState.isPaused}
-                gameMode={gameState.gameMode}
-                highlightedNumber={gameState.highlightedNumber}
-              />
-            ) : (
-              <div className="w-[288px] h-[288px] sm:w-[324px] sm:h-[324px] md:w-[450px] md:h-[450px] bg-muted/30 rounded-xl flex items-center justify-center border-2 border-dashed border-border">
-                <p className="text-muted-foreground text-center px-4 text-sm">
-                  Start a new game or import a puzzle to begin playing
-                </p>
-              </div>
-            )}
+          <div className="flex flex-col items-center gap-2 sm:gap-4 w-full">
+            <div onClick={(e) => e.stopPropagation()}>
+              {gameState ? (
+                <SudokuBoard
+                  board={gameState.board}
+                  initialBoard={gameState.initialBoard}
+                  solution={gameState.solution}
+                  notes={gameState.notes}
+                  selectedCell={gameState.selectedCell}
+                  hintCell={currentHint ? [currentHint.row, currentHint.col] : null}
+                  onCellClick={selectCell}
+                  isGameOver={gameState.isGameOver}
+                  isPaused={gameState.isPaused}
+                  gameMode={gameState.gameMode}
+                  highlightedNumber={gameState.highlightedNumber}
+                />
+              ) : (
+                <div className="w-[288px] h-[288px] sm:w-[324px] sm:h-[324px] md:w-[450px] md:h-[450px] bg-muted/30 rounded-xl flex items-center justify-center border-2 border-dashed border-border">
+                  <p className="text-muted-foreground text-center px-4 text-sm">
+                    Start a new game or import a puzzle to begin playing
+                  </p>
+                </div>
+              )}
+            </div>
 
-            <SudokuControls
-              isNotesMode={isNotesMode}
-              onToggleNotes={() => setIsNotesMode(!isNotesMode)}
-              onNumberClick={setNumber}
-              onUndo={undo}
-              onRedo={redo}
-              onHint={requestHint}
-              onSolve={solveBoard}
-              onReset={resetGame}
-              canUndo={gameState ? gameState.historyIndex > 0 : false}
-              canRedo={gameState ? gameState.historyIndex < gameState.history.length - 1 : false}
-              disabled={!gameState || gameState.isGameOver || gameState.isPaused}
-              aiSolverUnlocked={gameState?.aiSolverUnlocked ?? false}
-              isGameOver={gameState?.isGameOver ?? false}
-              board={gameState?.board}
-            />
+            <div onClick={(e) => e.stopPropagation()} className="w-full max-w-lg flex justify-center">
+              <SudokuControls
+                isNotesMode={isNotesMode}
+                onToggleNotes={() => setIsNotesMode(!isNotesMode)}
+                onNumberClick={setNumber}
+                onUndo={undo}
+                onRedo={redo}
+                onHint={requestHint}
+                onSolve={solveBoard}
+                onReset={resetGame}
+                canUndo={gameState ? gameState.historyIndex > 0 : false}
+                canRedo={gameState ? gameState.historyIndex < gameState.history.length - 1 : false}
+                disabled={!gameState || gameState.isGameOver || gameState.isPaused}
+                aiSolverUnlocked={gameState?.aiSolverUnlocked ?? false}
+                isGameOver={gameState?.isGameOver ?? false}
+                board={gameState?.board}
+              />
+            </div>
           </div>
 
           {currentHint && (

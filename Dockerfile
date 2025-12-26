@@ -30,8 +30,9 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Set up Python environment
+# Set up Python environment
 COPY requirements.txt .
-RUN pip3 install --no-cache-dir torch torchvision --index-url https://download.pytorch.org/whl/cpu --break-system-packages
+# RUN pip3 install --no-cache-dir torch torchvision --index-url https://download.pytorch.org/whl/cpu --break-system-packages (Allocating too much memory on Render)
 RUN pip3 install --no-cache-dir -r requirements.txt --break-system-packages
 
 # Copy Next.js build and dependencies

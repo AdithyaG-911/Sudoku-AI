@@ -3,7 +3,8 @@ import sys
 import os
 import json
 import cv2
-import torch
+import numpy as np
+import onnxruntime as ort
 import traceback
 import base64
 
@@ -13,11 +14,15 @@ CLONED_REPO_PATH = os.path.join(PROJECT_ROOT, 'sudoku-solver-computer-vision-cnn
 sys.path.append(CLONED_REPO_PATH)
 
 try:
-    from src.model.model import ConvNet
     from src.preprocess.build_features import process_sudoku_image, finding_sudoku_mask, extract_sudoku_grid
 except ImportError as e:
     print(json.dumps({"error": f"ImportError: {e}. Check if dependencies are installed."}))
     sys.exit(1)
+
+def softmax(x):
+    """Compute softmax values for each sets of scores in x."""
+    e_x = np.exp(x - np.max(x, axis=1, keepdims=True))
+    return e_x / e_x.sum(axis=1, keepdims=True)
 
 def main():
     if len(sys.argv) < 2:
@@ -42,62 +47,60 @@ def main():
         corners_np = extract_sudoku_grid(image.copy(), mask)
         
         # Convert numpy corners to list of list [[x,y],...]
-        # corners_np is 4x2 array
         corners_list = corners_np.tolist()
         
-        # 2. Process image (this re-does some work but ensures consistency with model input)
+        # 2. Process image
         # process_sudoku_image returns: cells, coords, warped_image
+        # cells is a numpy array (N, 28, 28)
         cells, coords, warped = process_sudoku_image(image)
         
         if cells is None:
              print(json.dumps({"error": "Failed to detect Sudoku grid"}))
-             sys.exit(0) # Not an error, just failed detection
+             sys.exit(0)
 
         # 3. Encode warped image for UI display
         _, buffer = cv2.imencode('.jpg', warped)
         warped_base64 = base64.b64encode(buffer).decode('utf-8')
         warped_data_url = f"data:image/jpeg;base64,{warped_base64}"
 
-        # Load model
-        device = torch.device("cpu") # Force CPU for simplicity/compatibility
-        model = ConvNet().to(device)
-        
-        model_path = os.path.join(CLONED_REPO_PATH, "models/50epochs_convnet_sudoku_only.pkl")
+        # Load ONNX model
+        model_path = os.path.join(CLONED_REPO_PATH, "models/model.onnx")
         if not os.path.exists(model_path):
              print(json.dumps({"error": f"Model file not found at {model_path}"}))
              sys.exit(1)
              
-        model.load_state_dict(torch.load(model_path, map_location=device))
-        model.eval()
-
-        # Predict
-        grid = [[0] * 9 for _ in range(9)]
-        confidences = [[0.0] * 9 for _ in range(9)]
+        # Initialize ONNX Runtime session
+        # Use CPUExecutionProvider
+        ort_session = ort.InferenceSession(model_path, providers=['CPUExecutionProvider'])
         
-        with torch.no_grad():
-            for i in range(9):
-                for j in range(9):
-                    cell_image = cells[i * 9 + j]
-                    tensor_image = (
-                        torch.from_numpy(cell_image)
-                        .float()
-                        .unsqueeze(0)
-                        .unsqueeze(0)
-                        .to(device)
-                    )
-                    tensor_image = tensor_image.repeat(1, 3, 1, 1)
+        input_name = ort_session.get_inputs()[0].name
 
-                    output = model(tensor_image)
-                    
-                    # Get probability/confidence
-                    probs = torch.nn.functional.softmax(output, dim=1)
-                    max_prob, predicted = torch.max(probs, 1)
-                    
-                    digit = predicted.item()
-                    confidence = max_prob.item()
-                    
-                    grid[i][j] = digit
-                    confidences[i][j] = confidence
+        # Prepare batch input
+        # cells is (81, 28, 28) float64/32
+        # Model expects (Batch, 3, 28, 28) float32
+        
+        # 1. Expand dims to (Batch, 1, 28, 28)
+        # 2. Repeat to 3 channels -> (Batch, 3, 28, 28)
+        # 3. Ensure float32
+        
+        batch_input = np.expand_dims(cells, axis=1) # (81, 1, 28, 28)
+        batch_input = np.repeat(batch_input, 3, axis=1) # (81, 3, 28, 28)
+        batch_input = batch_input.astype(np.float32)
+        
+        # Run inference in one batch
+        outputs = ort_session.run(None, {input_name: batch_input})
+        
+        # outputs[0] is (81, 10) - logits
+        logits = outputs[0]
+        
+        # Apply softmax and argmax
+        probs = softmax(logits)
+        predicted = np.argmax(probs, axis=1)
+        max_probs = np.max(probs, axis=1)
+        
+        # Reshape to 9x9
+        grid = predicted.reshape(9, 9).tolist()
+        confidences = max_probs.reshape(9, 9).tolist()
 
         # Prepare output
         result = {
@@ -112,6 +115,7 @@ def main():
 
     except Exception as e:
         print(json.dumps({"error": f"Unexpected error: {str(e)}", "traceback": traceback.format_exc()}))
+        print(traceback.format_exc(), file=sys.stderr)
         sys.exit(1)
 
 if __name__ == "__main__":
