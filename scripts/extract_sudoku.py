@@ -9,15 +9,178 @@ import traceback
 import base64
 
 # Add the cloned project to the python path
+# Add the cloned project to the python path
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CLONED_REPO_PATH = os.path.join(PROJECT_ROOT, 'sudoku-solver-computer-vision-cnn')
-sys.path.append(CLONED_REPO_PATH)
+# sys.path.append(CLONED_REPO_PATH) # No longer needed as we are not importing from it
 
-try:
-    from src.preprocess.build_features import process_sudoku_image, finding_sudoku_mask, extract_sudoku_grid
-except ImportError as e:
-    print(json.dumps({"error": f"ImportError: {e}. Check if dependencies are installed."}))
-    sys.exit(1)
+# --- Preprocessing functions imported from src.preprocess.build_features ---
+# Copied here to avoid importing src.data.dataio which depends on torch (not installed in prod)
+
+def perspective_transform(image, corners):
+    def order_corner_points(corners):
+        # Separate corners into individual points
+        # Index 0 - top-right
+        #       1 - top-left
+        #       2 - bottom-left
+        #       3 - bottom-right
+        corners = [(corner[0], corner[1]) for corner in corners]
+        top_r, top_l, bottom_l, bottom_r = (
+            corners[3],
+            corners[0],
+            corners[1],
+            corners[2],
+        )
+        return (top_l, top_r, bottom_r, bottom_l)
+
+    # Order points in clockwise order
+    ordered_corners = order_corner_points(corners)
+    top_l, top_r, bottom_r, bottom_l = ordered_corners
+
+    # Determine width of new image which is the max distance between
+    # (bottom right and bottom left) or (top right and top left) x-coordinates
+    width_A = np.sqrt(
+        ((bottom_r[0] - bottom_l[0]) ** 2) + ((bottom_r[1] - bottom_l[1]) ** 2)
+    )
+    width_B = np.sqrt(((top_r[0] - top_l[0]) ** 2) + ((top_r[1] - top_l[1]) ** 2))
+    width = max(int(width_A), int(width_B))
+
+    # Determine height of new image which is the max distance between
+    # (top right and bottom right) or (top left and bottom left) y-coordinates
+    height_A = np.sqrt(
+        ((top_r[0] - bottom_r[0]) ** 2) + ((top_r[1] - bottom_r[1]) ** 2)
+    )
+    height_B = np.sqrt(
+        ((top_l[0] - bottom_l[0]) ** 2) + ((top_l[1] - bottom_l[1]) ** 2)
+    )
+    height = max(int(height_A), int(height_B))
+
+    # Construct new points to obtain top-down view of image in
+    # top_r, top_l, bottom_l, bottom_r order
+    dimensions = np.array(
+        [[0, 0], [width - 1, 0], [width - 1, height - 1], [0, height - 1]],
+        dtype="float32",
+    )
+
+    # Convert to Numpy format
+    ordered_corners = np.array(ordered_corners, dtype="float32")
+
+    # Find perspective transform matrix
+    matrix = cv2.getPerspectiveTransform(ordered_corners, dimensions)
+
+    # Return the transformed image
+    return cv2.warpPerspective(image, matrix, (width, height))
+
+
+def extract_cells_with_coords_from_warped_image(image):
+    h, w = image.shape[:2]
+    cell_h, cell_w = h // 9, w // 9
+
+    cells = []
+    for i in range(9):
+        for j in range(9):
+            x, y = j * cell_w, i * cell_h
+            cells.append(
+                {
+                    "image": image[y : y + cell_h, x : x + cell_w],
+                    "coords": (x, y, cell_w, cell_h),
+                }
+            )
+    return cells
+
+
+def finding_sudoku_mask(image):
+    sudoku_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    # BLur
+    sudoku_blur = cv2.GaussianBlur(sudoku_gray, (5, 5), 0)
+    thresh = cv2.adaptiveThreshold(
+        sudoku_blur, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 11, 3
+    )
+    dilate = cv2.dilate(thresh, kernel=np.ones((3, 3), np.uint8), iterations=1)
+    closing = cv2.morphologyEx(dilate, cv2.MORPH_CLOSE, np.ones((3, 3)))
+
+    return closing
+
+
+def extract_sudoku_grid(image, mask):
+    # Find Contours
+    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    
+    # Sort contours by area in descending order and convert to list to avoid Empty Sequence error
+    contours = sorted(contours, key=cv2.contourArea, reverse=True)
+    
+    if not contours:
+        return np.array([])
+
+    largest_contour = contours[0]
+
+    # Draw Contour on the image (optional, for debug/UI)
+    # cv2.drawContours(image, [largest_contour], -1, (0, 0, 255), 2)
+
+    peri = cv2.arcLength(largest_contour, True)  # Get the perimeter
+    approx = cv2.approxPolyDP(
+        largest_contour, 0.02 * peri, True
+    )  # Przyblizanie konturu 2 % obwodu ( True Zamkniety kontur)
+
+    # If we still don't have 4 points
+    if len(approx) != 4:
+        rect = cv2.minAreaRect(
+            largest_contour
+        )  # MinAreaRect zwraca prostokat, ktory ma najmniejsza powierzchnie i zawiera kontur
+        box = cv2.boxPoints(
+            rect
+        )  # BoxPoints zwraca 4 punkty, ktore sa wierzcholkami prostokata
+        approx = np.array(box)
+
+    corners = approx.reshape(4, 2)  # Reshape to 4x2 array
+
+    return corners
+
+
+def process_sudoku_image(image, invert_for_mnist_compatibility=True):
+    try:
+        # Get sudoku box
+        mask = finding_sudoku_mask(image.copy())
+        corners = extract_sudoku_grid(image.copy(), mask)
+        
+        if len(corners) != 4:
+             return None, None, None
+             
+        warped = perspective_transform(image, corners)
+
+        # Process cells
+        cells_data = extract_cells_with_coords_from_warped_image(warped)
+        processed_cells = []
+        coords = []
+
+        for cell in cells_data:
+            # Convert to grayscale
+            gray = cv2.cvtColor(cell["image"], cv2.COLOR_BGR2GRAY)
+
+            # Apply Otsu's thresholding - FIX: Use THRESH_BINARY (not INV) to match MNIST
+            if invert_for_mnist_compatibility:
+                # MNIST format: black background, white digits
+                _, binary = cv2.threshold(
+                    gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU
+                )
+            else:
+                # Original format: white background, black digits
+                _, binary = cv2.threshold(
+                    gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU
+                )
+
+            # Resize to 28x28 and normalize to [0,1] range
+            processed = cv2.resize(binary, (28, 28)) / 255.0
+
+            processed_cells.append(processed)
+            coords.append(cell["coords"])
+
+        return np.array(processed_cells), coords, warped
+    except Exception as e:
+        # print(f"Error: {e}")
+        return None, None, None
+
+# -------------------------------------------------------------------
 
 def softmax(x):
     """Compute softmax values for each sets of scores in x."""
